@@ -41,7 +41,7 @@ class SnekEnv():
 
     def reset(self):
         self.snake = [((int) (random() * N_COLS), (int) (random() * N_ROWS))]
-        self.apple = (int) (random() * N_COLS), (int) (random() * N_ROWS)
+        self.apple = self.generate_apple()
         self.v_x, self.v_y = 1, 0 
         self.running = True
         self.score = 0
@@ -84,7 +84,7 @@ class SnekEnv():
         
         # ate apple
         else:
-            self.apple = (int) (random() * N_COLS), (int) (random() * N_ROWS)
+            self.apple = self.generate_apple()
             ate_apple = True
             self.rewards += 1
             self.n_step_hunger = 0
@@ -148,6 +148,12 @@ class SnekEnv():
 
         # return 1.0 * np.array(dist_to_wall + will_hit_tail)
         return 1.0 * np.array(dist_to_wall + will_hit_tail + apple_info)
+    
+    def generate_apple(self):
+        while True:
+            apple = (int) (random() * N_COLS), (int) (random() * N_ROWS)
+            if apple not in self.snake:
+                return apple
 
 
         
