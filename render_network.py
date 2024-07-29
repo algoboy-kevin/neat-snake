@@ -4,26 +4,27 @@ from render import GAME_W, NET_W, NODE_SIZE, SCREEN_WIDTH, WINDOW_BUFFER
 def get_node_centers(net, genome, hidden_nodes):
   
     node_centers = {}
-
-    startX = WINDOW_BUFFER + 75
-    startY = WINDOW_BUFFER + NODE_SIZE
+    anchorX = 0
+    anchorY = 25
+    
+    startX = anchorX + WINDOW_BUFFER + 75
+    startY = anchorY + WINDOW_BUFFER + NODE_SIZE
 
     for i, input_node in enumerate(net.input_nodes):
       center2 = startX + 5.5 * NODE_SIZE, startY + i * 3 * NODE_SIZE + 10
       node_centers[input_node] = center2
 
-    startX = WINDOW_BUFFER + 0.5 * NET_W
-    startY = WINDOW_BUFFER + NODE_SIZE * 6
+    startX = anchorX + WINDOW_BUFFER + 0.5 * NET_W
+    startY = anchorY + WINDOW_BUFFER + NODE_SIZE * 6
 
     for i, hidden_node in enumerate(hidden_nodes):
-      x = startX + 2 * NODE_SIZE if i % 2 == 0 else startX - 2 * NODE_SIZE
+      x = startX + 1 * NODE_SIZE if i % 2 == 0 else startX - 2 * NODE_SIZE
       if i == 2: x += NODE_SIZE * 3
-      center2 = x, startY + i * 5 * NODE_SIZE + 10
+      center2 = x, startY + i * 2 * NODE_SIZE + 10
       node_centers[hidden_node] = center2
 
-
-    startX = SCREEN_WIDTH - GAME_W - WINDOW_BUFFER * 3 - NODE_SIZE + 425
-    startY = WINDOW_BUFFER + 12 * NODE_SIZE
+    startX = anchorX + SCREEN_WIDTH - GAME_W - WINDOW_BUFFER * 3 - NODE_SIZE - 50
+    startY = anchorY + WINDOW_BUFFER + 12 * NODE_SIZE
 
     for i, output_node in enumerate(net.output_nodes):
         center2 = startX - 2 * NODE_SIZE, startY + i * 3 * NODE_SIZE + 10

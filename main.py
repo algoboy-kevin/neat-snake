@@ -175,7 +175,8 @@ if __name__ == '__main__':
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, 'config-feedforward')
     checkpoint_path = os.path.join(local_dir, 'checkpoints')
-    winner_path = os.path.join(local_dir, WINNER_FILENAME)
+    winner_path = os.path.join(local_dir, 'winner/last-winner')
+    default_winner_path = os.path.join(local_dir, 'winner/default-winner')
     
     if len(sys.argv) == 0:
         run(config_path)
@@ -187,5 +188,7 @@ if __name__ == '__main__':
         run(config_path, checkpoint_path, 'parallel')
     elif sys.argv[1] == 'test_winner':
         test_winner(config_path, winner_path)
+    elif sys.argv[1] == 'default_winner':
+        test_winner(config_path, default_winner_path)
 
     

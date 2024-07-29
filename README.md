@@ -8,12 +8,12 @@ Kevin Gamaliel, inspired by [Daniel Chang](https://github.com/danielchang2002/50
 pip install -r requirements.txt
 ```
 
-3. Test environemtn
+2. Test environment
 ```bash
 python main.py test
 ```
 
-4. Train experiment
+3. Train experiment
 ```bash
 python main.py train
 ```
