@@ -33,29 +33,29 @@ def get_node_centers(net, genome, hidden_nodes):
 
 
 def modify_eval_functions(net, genome, config):
-  """
-  Modify neat-python's function to display more hidden nodes 
-  """
-  # Gather expressed connections.
-  connections = [cg.key for cg in genome.connections.values() if cg.enabled]
+    """
+    Modify neat-python's function to display more hidden nodes 
+    """
+    # Gather expressed connections.
+    connections = [cg.key for cg in genome.connections.values() if cg.enabled]
 
-  layers = feed_forward_layers(config.genome_config.input_keys, config.genome_config.output_keys, connections, genome)
-  node_evals = []
-  for layer in layers:
-      for node in layer:
-          inputs = []
-          for conn_key in connections:
-              inode, onode = conn_key
-              if onode == node:
-                  cg = genome.connections[conn_key]
-                  inputs.append((inode, cg.weight))
+    layers = feed_forward_layers(config.genome_config.input_keys, config.genome_config.output_keys, connections, genome)
+    node_evals = []
+    for layer in layers:
+        for node in layer:
+            inputs = []
+            for conn_key in connections:
+                inode, onode = conn_key
+                if onode == node:
+                    cg = genome.connections[conn_key]
+                    inputs.append((inode, cg.weight))
 
-          ng = genome.nodes[node]
-          aggregation_function = config.genome_config.aggregation_function_defs.get(ng.aggregation)
-          activation_function = config.genome_config.activation_defs.get(ng.activation)
-          node_evals.append((node, activation_function, aggregation_function, ng.bias, ng.response, inputs))
+            ng = genome.nodes[node]
+            aggregation_function = config.genome_config.aggregation_function_defs.get(ng.aggregation)
+            activation_function = config.genome_config.activation_defs.get(ng.activation)
+            node_evals.append((node, activation_function, aggregation_function, ng.bias, ng.response, inputs))
   
-  net.node_evals = node_evals
+    return node_evals
 
 def feed_forward_layers(inputs, outputs, connections, genome):
   """

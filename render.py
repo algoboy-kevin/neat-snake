@@ -14,7 +14,6 @@ BLOCK_W, BLOCK_H = GAME_W / N_COLS, GAME_H / N_ROWS
 GAME_TOP_LEFT = (WINDOW_BUFFER + 0, 400 + WINDOW_BUFFER)
 NODE_SIZE = 10
 BUFFER = 8
-screen = None
 
 # ---------------- color settings --------------
 
@@ -53,7 +52,7 @@ def render(snake, apple, net, genome, node_centers, hidden_nodes):
             pygame.quit()
 
     screen.fill(BLACK)
-    draw_square(screen) 
+    draw_square() 
     draw_snake(snake) 
     draw_apple(apple) 
     draw_network( 
@@ -81,7 +80,6 @@ def getLeftTop(x, y):
 
 def draw_snake(snake):
     global screen
-    print(snake)
       
     for i, (x, y) in enumerate(snake):
         rect = pygame.Rect(getLeftTop(x, y), (BLOCK_W - BUFFER * 2, BLOCK_H - BUFFER * 2))
@@ -89,18 +87,18 @@ def draw_snake(snake):
 
 def draw_connections(first_set, second_set, net, genome, node_centers):
   global screen
-  for first in first_set:
-    for second in second_set:
-      if (first, second) in genome.connections:
-        start = node_centers[first]
-        stop = node_centers[second]
-        weight = genome.connections[(first, second)].weight
-        color = BLUE if weight >= 0 else ORANGE
 
-        surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        alpha = 255 * (0.3 + net.values[first] * 0.7)
-        pygame.draw.line(surf, color + (alpha,), start, stop, width=5)
-        screen.blit(surf, (0, 0))
+  for first in first_set:
+        for second in second_set:
+            if (first, second) in genome.connections:
+                start = node_centers[first]
+                stop = node_centers[second]
+                weight = genome.connections[(first, second)].weight
+                color = BLUE if weight >= 0 else ORANGE
+                surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+                alpha = 255 * (0.3 + net.values[first] * 0.7)
+                pygame.draw.line(surf, color + (alpha,), start, stop, width=5)
+                screen.blit(surf, (0, 0))
 
 def draw_network(net, genome, node_centers, hidden_nodes):
     global screen
@@ -161,8 +159,8 @@ def draw_network(net, genome, node_centers, hidden_nodes):
         # img = font.render(str(hidden), True, WHITE)
         # screen.blit(img, center2)
 
-        pygame.draw.circle(color, center, NODE_SIZE)
-        pygame.draw.circle(WHITE, center, NODE_SIZE, width=5)
+        pygame.draw.circle(screen, color, center, NODE_SIZE)
+        pygame.draw.circle(screen, WHITE, center, NODE_SIZE, width=5)
 
 
 

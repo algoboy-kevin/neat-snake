@@ -32,12 +32,13 @@ class SnekEnv():
         self.config = config
 
         # Modify nets to accomodate display
-        modify_eval_functions(self.net, self.genome, self.config)
+        self.net.node_evals = modify_eval_functions(self.net, self.genome, self.config)
         has_eval = set(eval[0] for eval in self.net.node_evals)
         has_input = set(con[1] for con in self.genome.connections)
+        
         self.hidden_nodes = [node for node in self.genome.nodes if not 0 <= node <= 3 and node in has_input and node in has_eval]
         self.node_centers = get_node_centers(self.net, self.genome, self.hidden_nodes)
-        
+
     def reset(self):
         self.snake = [((int) (random() * N_COLS), (int) (random() * N_ROWS))]
         self.apple = (int) (random() * N_COLS), (int) (random() * N_ROWS)

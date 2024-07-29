@@ -1,14 +1,16 @@
-from __future__ import print_function
 import multiprocessing
 import pickle
-from game_env import *
-from render import spawn_window,render_basic
 import pygame
 import os
 import neat
 import sys
 import random
 import time
+from utils import does_checkpoint_exist, get_last_episode
+from game_env import *
+from render import spawn_window,render_basic, render
+
+WINNER_FILENAME = "winner/last-winner"
 
 def test():
     scores = []
@@ -34,12 +36,10 @@ def test():
             if done:
                 scores.append(env.rewards)
             
-            time.sleep(0.1)
+            time.sleep(0.5)
 
     # return the average scores
-    print(scores)
     mean = np.mean(scores)
-    print(mean)
     return mean
 
 def simulate(net):
@@ -67,16 +67,36 @@ def simulate(net):
     # return the average scores
     return np.mean(scores)
 
-def replay_genome(genome, config):
+def replay_genome(genome, config, display=False):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
-    env = SnekEnv(net, genome, config)
+    env = SnekEnv()
     obs = env.reset()
     done = False
-    while not done:
-        activation = net.activate(obs)
-        action = np.argmax(activation)
-        obs, done = env.step(action)
-        
+    if display:
+        env.render_init(net, genome, config)
+        spawn_window()
+        pygame.init()
+        while not done:
+            activation = env.net.activate(obs)
+            render(
+                env.snake, 
+                env.apple, 
+                env.net, 
+                env.genome, 
+                env.node_centers, 
+                env.hidden_nodes
+            )
+            action = np.argmax(activation)
+            obs, done = env.step(action)
+            time.sleep(0.1)
+
+        pygame.quit()
+    else:
+        while not done:
+            activation = net.activate(obs)
+            action = np.argmax(activation)
+            obs, done = env.step(action)
+
     # env close
             
 def eval_genomes(genomes, config):
@@ -99,7 +119,21 @@ def eval_genome(genome, config):
     fitness = simulate(net, genome, config)  
     return fitness
 
-def run(config_file, arg):
+def test_winner(config_file, genome):
+    with open(genome, "rb") as f:
+        winner = pickle.load(f, encoding="latin-1")
+
+    config = neat.Config(
+        neat.DefaultGenome, 
+        neat.DefaultReproduction,                 
+        neat.DefaultSpeciesSet, 
+        neat.DefaultStagnation,
+        config_file
+    )
+    
+    replay_genome(winner, config, True)
+
+def run(config_file, checkpoint_path, arg):
     # Load configuration.
     config = neat.Config(
         neat.DefaultGenome, 
@@ -110,7 +144,15 @@ def run(config_file, arg):
     )
 
     # Create the population, which is the top-level object for a NEAT run.
-    p = neat.Population(config)
+    # Check if a winner file already exists
+    if does_checkpoint_exist(checkpoint_path):
+        print("Found checkpoint on ", checkpoint_path)
+        last_episode = get_last_episode(checkpoint_path)
+        p = neat.Checkpointer.restore_checkpoint(last_episode)
+          
+    else:
+        # Start training from scratch
+        p = neat.Population(config)
 
     # Add a stdout reporter to show progress in the terminal.
     p.add_reporter(neat.StdOutReporter(True))
@@ -120,26 +162,30 @@ def run(config_file, arg):
 
     # Run for up to 500 generations.
     if arg == 'serial':
-        winner = p.run(eval_genomes, 500)
+        winner = p.run(eval_genomes, 3)
     elif arg == 'parallel':
         pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
         winner = p.run(pe.evaluate, n=500)
 
-    with open('winner/neat-winner', 'wb') as f:
+    # Save file once winner is found
+    with open(WINNER_FILENAME, 'wb') as f:
         pickle.dump(winner, f)
-
 
 if __name__ == '__main__':
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, 'config-feedforward')
+    checkpoint_path = os.path.join(local_dir, 'checkpoints')
+    winner_path = os.path.join(local_dir, WINNER_FILENAME)
     
     if len(sys.argv) == 0:
         run(config_path)
     elif sys.argv[1] == 'test':
         test()
     elif sys.argv[1] == 'train':
-        run(config_path, 'serial')
+        run(config_path, checkpoint_path, 'serial')
     elif sys.argv[1] == 'train_fast':
-        run(config_path, 'parallel')
+        run(config_path, checkpoint_path, 'parallel')
+    elif sys.argv[1] == 'test_winner':
+        test_winner(config_path, winner_path)
 
     
