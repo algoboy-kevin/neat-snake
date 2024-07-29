@@ -2,6 +2,7 @@ import pygame
 
 # ---------------- display settings --------------
 
+GAME_NAME = "SNAKE (10x10)"
 N_ROWS = 10
 N_COLS = 10
 NET_W, NET_H = 450, 900
@@ -16,6 +17,10 @@ GAME_Y = 0
 GAME_TOP_LEFT = (WINDOW_BUFFER + GAME_X, GAME_Y + WINDOW_BUFFER)
 NODE_SIZE = 10
 BUFFER = 8
+TITLE_X = 0
+TITLE_Y = 0
+NETWORK_X = 0
+NETWORK_Y = 75
 
 # ---------------- color settings --------------
 
@@ -55,6 +60,7 @@ def render(snake, apple, net, genome, node_centers, hidden_nodes):
 
     screen.fill(BLACK)
     draw_square() 
+    draw_title()
     draw_snake(snake) 
     draw_apple(apple) 
     draw_network( 
@@ -80,6 +86,12 @@ def draw_apple(apple_coordinate):
 def getLeftTop(x, y):
     return (x / N_ROWS) * GAME_W + BUFFER + GAME_TOP_LEFT[0], (y / N_ROWS) * GAME_H + BUFFER + GAME_TOP_LEFT[1]
 
+
+def draw_text(pop):
+  global screen
+  font = pygame.font.Font("cmunbtl.otf", 24)
+ 
+
 def draw_snake(snake):
     global screen
       
@@ -101,6 +113,15 @@ def draw_connections(first_set, second_set, net, genome, node_centers):
                 alpha = 255 * (0.3 + net.values[first] * 0.7)
                 pygame.draw.line(surf, color + (alpha,), start, stop, width=5)
                 screen.blit(surf, (0, 0))
+
+def draw_title():
+    global screen
+    
+    font = pygame.font.Font("cmunbtl.otf", 24)
+    title = font.render(f'Neat Algorithm: {GAME_NAME}', True, WHITE)
+    sub_title = font.render(f'Network activation: ', True, WHITE)
+    screen.blit(title, (TITLE_X + WINDOW_BUFFER, TITLE_Y + WINDOW_BUFFER))
+    screen.blit(sub_title, (TITLE_X + WINDOW_BUFFER, TITLE_Y + WINDOW_BUFFER * 2.3))
 
 def draw_network(net, genome, node_centers, hidden_nodes):
     global screen

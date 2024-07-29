@@ -84,11 +84,11 @@ def replay_genome(genome, config, display=False):
                 env.net, 
                 env.genome, 
                 env.node_centers, 
-                env.hidden_nodes
+                env.hidden_nodes,
             )
             action = np.argmax(activation)
             obs, done = env.step(action)
-            time.sleep(0.1)
+            time.sleep(0.03)
 
         pygame.quit()
     else:
