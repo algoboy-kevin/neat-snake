@@ -40,9 +40,9 @@ class SnekEnv():
         self.node_centers = get_node_centers(self.net, self.genome, self.hidden_nodes)
 
     def reset(self):
-        self.snake = [((int) (random() * N_COLS), (int) (random() * N_ROWS))]
+        self.snake = [((int) (random() * (N_COLS)), (int) (random() * (N_ROWS)))]
         self.apple = self.generate_apple()
-        self.v_x, self.v_y = 1, 0 
+        self.v_x, self.v_y = 1, 0
         self.running = True
         self.score = 0
         self.n_step = 0
@@ -96,20 +96,21 @@ class SnekEnv():
         assert(0 <= action <= 3)
 
         # wasd
-        if action == 0:
+        if action == 0: # up
             self.v_x = 0
             self.v_y = -1
-        elif action == 1:
+        elif action == 1: # left
             self.v_x = -1
             self.v_y = 0
-        elif action == 2:
+        elif action == 2: # bot
             self.v_x = 0
             self.v_y = 1
-        else:
+        else: # right
             self.v_x = 1
             self.v_y = 0 
 
     def get_observation(self):
+        # snake head
         x, y = self.snake[-1]
 
         # inverted distance to wall
@@ -122,18 +123,21 @@ class SnekEnv():
         ]
 
         # flag for if will hit tail in this cardinal direction
+        # todo: modify the function so that it only trigger 
         will_hit_tail = [0, 0, 0, 0]
 
         for (body_x, body_y) in self.snake[:-1]:
-            if body_x == x:
-                if body_y > y:
+            delta_x = body_x - x
+            delta_y = body_y - y
+            if delta_x == 0:
+                if delta_y > 0 and self.v_y != -1: # south
                     will_hit_tail[1] = 1
-                else:
+                elif not delta_y > 0 and self.v_y != 1: #north
                     will_hit_tail[0] = 1
-            elif body_y == y:
-                if body_x > x:
+            elif delta_y == 0 :
+                if delta_x > 0 and self.v_x != -1: # east
                     will_hit_tail[2] = 1
-                else:
+                elif not delta_x > 0 and self.v_x != 1: # west
                     will_hit_tail[3] = 1
 
         # apple
@@ -145,9 +149,9 @@ class SnekEnv():
             y == a_y and a_x > x,
             y == a_y and a_x < x,
         ]
-
+        obs = 1.0 * np.array(dist_to_wall + will_hit_tail + apple_info)
         # return 1.0 * np.array(dist_to_wall + will_hit_tail)
-        return 1.0 * np.array(dist_to_wall + will_hit_tail + apple_info)
+        return obs
     
     def generate_apple(self):
         while True:

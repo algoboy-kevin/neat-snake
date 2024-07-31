@@ -10,9 +10,11 @@ from utils import does_checkpoint_exist, get_last_episode
 from game_env import *
 from render import spawn_window,render_basic, render
 
-WINNER_FILENAME = "winner/last-winner"
+WINNER_FILENAME = "winner/latest-winner"
+FPS = 5
+FRAME_RATE = 1/FPS
 
-def test():
+def test_env():
     scores = []
     iterations = 10
     env = SnekEnv()
@@ -36,7 +38,7 @@ def test():
             if done:
                 scores.append(env.rewards)
             
-            time.sleep(0.5)
+            time.sleep(FRAME_RATE)
 
     # return the average scores
     mean = np.mean(scores)
@@ -57,7 +59,7 @@ def simulate(net):
             obs, done = env.step(action)
             
             # if snake does not eat after 100 step, round is reset
-            if env.n_step_hunger > 100:
+            if env.n_step_hunger > 1000:
                 done = True
 
             # append score if snake dead
@@ -73,10 +75,15 @@ def replay_genome(genome, config, display=False):
     obs = env.reset()
     done = False
     if display:
+        # modify neural net to accomodate rendering
         env.render_init(net, genome, config)
+
+        # pygame initialization
         spawn_window()
         pygame.init()
+
         while not done:
+            # net activation must be triggered to see hidden nodes
             activation = env.net.activate(obs)
             render(
                 env.snake, 
@@ -88,7 +95,7 @@ def replay_genome(genome, config, display=False):
             )
             action = np.argmax(activation)
             obs, done = env.step(action)
-            time.sleep(0.03)
+            time.sleep(FRAME_RATE)
 
         pygame.quit()
     else:
@@ -110,16 +117,16 @@ def eval_genomes(genomes, config):
             best_fit = genome.fitness
             best_genome = genome
 
-    if best_fit >= 20:
+    if best_fit >= 40:
         replay_genome(best_genome, config)
 
 def eval_genome(genome, config):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
-    fitness = simulate(net, genome, config)  
+    fitness = simulate(net)  
     return fitness
 
-def test_winner(config_file, genome):
+def run_trained(config_file, genome):
     with open(genome, "rb") as f:
         winner = pickle.load(f, encoding="latin-1")
 
@@ -158,12 +165,12 @@ def run(config_file, checkpoint_path, arg):
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(5, filename_prefix='checkpoints/neat-checkpoint-'))
+    p.add_reporter(neat.Checkpointer(10, filename_prefix='checkpoints/neat-checkpoint-'))
 
     # Run for up to 500 generations.
-    if arg == 'serial':
-        winner = p.run(eval_genomes, 3)
-    elif arg == 'parallel':
+    if arg == 'save':
+        winner = p.run(eval_genomes, 2)
+    elif arg == 'train':
         pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
         winner = p.run(pe.evaluate, n=500)
 
@@ -175,20 +182,20 @@ if __name__ == '__main__':
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, 'config-feedforward')
     checkpoint_path = os.path.join(local_dir, 'checkpoints')
-    winner_path = os.path.join(local_dir, 'winner/last-winner')
+    winner_path = os.path.join(local_dir, 'winner/latest-winner')
     default_winner_path = os.path.join(local_dir, 'winner/default-winner')
     
     if len(sys.argv) == 0:
         run(config_path)
     elif sys.argv[1] == 'test':
-        test()
+        test_env()
+    elif sys.argv[1] == 'save':
+        run(config_path, checkpoint_path, 'save')
     elif sys.argv[1] == 'train':
-        run(config_path, checkpoint_path, 'serial')
-    elif sys.argv[1] == 'train_fast':
-        run(config_path, checkpoint_path, 'parallel')
-    elif sys.argv[1] == 'test_winner':
-        test_winner(config_path, winner_path)
-    elif sys.argv[1] == 'default_winner':
-        test_winner(config_path, default_winner_path)
+        run(config_path, checkpoint_path, 'train')
+    elif sys.argv[1] == 'run':
+        run_trained(config_path, winner_path)
+    elif sys.argv[1] == 'run_master':
+        run_trained(config_path, default_winner_path)
 
     

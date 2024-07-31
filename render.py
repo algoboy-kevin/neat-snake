@@ -38,6 +38,7 @@ def spawn_window():
     STEP = pygame.USEREVENT + 1
     pygame.time.set_timer(STEP, INTERVAL)
 
+# Render without network
 def render_basic(snake, apple):
     global screen
 
@@ -85,13 +86,7 @@ def draw_apple(apple_coordinate):
 
 def getLeftTop(x, y):
     return (x / N_ROWS) * GAME_W + BUFFER + GAME_TOP_LEFT[0], (y / N_ROWS) * GAME_H + BUFFER + GAME_TOP_LEFT[1]
-
-
-def draw_text(pop):
-  global screen
-  font = pygame.font.Font("cmunbtl.otf", 24)
  
-
 def draw_snake(snake):
     global screen
       
@@ -184,8 +179,3 @@ def draw_network(net, genome, node_centers, hidden_nodes):
 
         pygame.draw.circle(screen, color, center, NODE_SIZE)
         pygame.draw.circle(screen, WHITE, center, NODE_SIZE, width=5)
-
-
-
-
-
